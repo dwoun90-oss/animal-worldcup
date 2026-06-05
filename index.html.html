@@ -1,0 +1,424 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>🏆 동물 선호 월드컵</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Black+Han+Sans&family=Noto+Sans+KR:wght@400;500;700&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #0a1628;
+      --bg2: rgba(255,255,255,0.04);
+      --border: rgba(255,255,255,0.10);
+      --text: #e8edf5;
+      --muted: #94a3b8;
+      --green: #22c55e;
+      --green2: #16a34a;
+      --yellow: #facc15;
+      --yellow2: #f59e0b;
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      font-family: 'Noto Sans KR', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    body::before {
+      content: '';
+      position: fixed;
+      top: -150px; left: -150px;
+      width: 600px; height: 600px;
+      background: radial-gradient(circle, rgba(34,197,94,0.10) 0%, transparent 70%);
+      pointer-events: none;
+      z-index: 0;
+    }
+    body::after {
+      content: '';
+      position: fixed;
+      bottom: -100px; right: -100px;
+      width: 500px; height: 500px;
+      background: radial-gradient(circle, rgba(59,130,246,0.08) 0%, transparent 70%);
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    #app { position: relative; z-index: 1; max-width: 900px; margin: 0 auto; padding-bottom: 3rem; }
+
+    /* HEADER */
+    .wc-header { text-align: center; padding: 2.5rem 1rem 1.2rem; }
+    .wc-trophy { font-size: 3rem; display: block; animation: pulse 2.5s ease-in-out infinite; }
+    @keyframes pulse { 0%,100%{transform:scale(1)} 50%{transform:scale(1.10)} }
+    @keyframes fadeIn { from{opacity:0;transform:translateY(10px)} to{opacity:1;transform:translateY(0)} }
+    @keyframes popIn { from{opacity:0;transform:scale(0.8)} to{opacity:1;transform:scale(1)} }
+
+    .wc-title {
+      font-family: 'Black Han Sans', sans-serif;
+      font-size: clamp(1.8rem, 6vw, 2.6rem);
+      color: var(--yellow);
+      letter-spacing: 0.05em;
+      margin-top: 0.4rem;
+      text-shadow: 0 0 40px rgba(250,204,21,0.4);
+    }
+    .wc-subtitle { font-size: 0.88rem; color: var(--muted); margin-top: 0.3rem; }
+    .round-badge {
+      display: inline-block;
+      background: linear-gradient(135deg, var(--green), var(--green2));
+      color: #fff;
+      font-family: 'Black Han Sans', sans-serif;
+      font-size: 0.95rem;
+      padding: 0.3rem 1.2rem;
+      border-radius: 999px;
+      margin-top: 0.7rem;
+      letter-spacing: 0.05em;
+      transition: all 0.3s;
+    }
+
+    /* PROGRESS */
+    .progress-wrap {
+      background: rgba(255,255,255,0.06);
+      border-radius: 999px;
+      height: 6px;
+      margin: 1rem 1.5rem 0.3rem;
+      overflow: hidden;
+    }
+    .progress-fill {
+      height: 100%;
+      background: linear-gradient(90deg, var(--green), var(--yellow));
+      border-radius: 999px;
+      transition: width 0.4s ease;
+      width: 0%;
+    }
+    .status-info {
+      text-align: center;
+      font-size: 0.83rem;
+      color: #86efac;
+      margin: 0.5rem 1rem 0.8rem;
+      min-height: 1.3rem;
+    }
+
+    /* GRID */
+    .match-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+      gap: 12px;
+      padding: 0 1rem;
+      animation: fadeIn 0.4s ease;
+    }
+
+    /* CARD */
+    .match-card {
+      background: var(--bg2);
+      border: 0.5px solid var(--border);
+      border-radius: 16px;
+      overflow: hidden;
+      transition: transform 0.18s, border-color 0.18s, box-shadow 0.18s;
+    }
+    .match-card:hover {
+      transform: translateY(-3px);
+      border-color: rgba(250,204,21,0.35);
+      box-shadow: 0 8px 24px rgba(0,0,0,0.3);
+    }
+    .match-num {
+      font-size: 10px;
+      color: #475569;
+      text-align: center;
+      padding: 7px 0 3px;
+      letter-spacing: 0.1em;
+    }
+    .match-vs {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 3px;
+      padding: 4px 10px 12px;
+    }
+    .vs-label { font-size: 10px; color: #475569; font-weight: 700; letter-spacing: 0.1em; }
+
+    /* ANIMAL BUTTONS */
+    .abtn {
+      width: 100%;
+      background: rgba(255,255,255,0.06);
+      border: 0.5px solid rgba(255,255,255,0.12);
+      border-radius: 10px;
+      padding: 8px 7px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      transition: background 0.15s, border-color 0.15s, transform 0.1s;
+      color: var(--text);
+      font-family: 'Noto Sans KR', sans-serif;
+      font-size: 13px;
+      font-weight: 500;
+      text-align: left;
+    }
+    .abtn:hover {
+      background: rgba(34,197,94,0.20);
+      border-color: var(--green);
+      transform: scale(1.03);
+    }
+    .abtn:active { transform: scale(0.98); }
+    .abtn.winner {
+      background: rgba(250,204,21,0.18);
+      border-color: var(--yellow);
+      color: var(--yellow);
+      font-weight: 700;
+    }
+    .abtn.loser { opacity: 0.28; }
+    .aemoji { font-size: 1.4rem; line-height: 1; flex-shrink: 0; }
+
+    /* FOOTER */
+    .footer { text-align: center; padding: 1.4rem 1rem 0.5rem; }
+    .proceed-btn {
+      background: linear-gradient(135deg, var(--green), var(--green2));
+      color: #fff;
+      border: none;
+      border-radius: 14px;
+      padding: 0.85rem 2.5rem;
+      font-family: 'Black Han Sans', sans-serif;
+      font-size: 1.05rem;
+      letter-spacing: 0.05em;
+      cursor: not-allowed;
+      opacity: 0.3;
+      transition: opacity 0.25s, transform 0.15s, box-shadow 0.2s;
+    }
+    .proceed-btn.active {
+      opacity: 1;
+      cursor: pointer;
+      box-shadow: 0 4px 20px rgba(34,197,94,0.4);
+    }
+    .proceed-btn.active:hover {
+      transform: scale(1.05);
+      box-shadow: 0 6px 28px rgba(34,197,94,0.5);
+    }
+    .proceed-btn.active:active { transform: scale(0.98); }
+
+    /* CHAMPION */
+    .champ-screen {
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 4rem 1rem 3rem;
+      text-align: center;
+      animation: fadeIn 0.6s ease;
+    }
+    .champ-screen.show { display: flex; }
+    .champ-emoji { font-size: 6rem; animation: pulse 1.5s ease-in-out infinite; }
+    .confetti-line { font-size: 1.5rem; margin: 0.5rem 0 0; letter-spacing: 0.3em; }
+    .champ-title {
+      font-family: 'Black Han Sans', sans-serif;
+      font-size: 1.3rem;
+      color: var(--yellow);
+      margin: 0.8rem 0 0.3rem;
+    }
+    .champ-name {
+      font-family: 'Black Han Sans', sans-serif;
+      font-size: 2.8rem;
+      color: #fff;
+      text-shadow: 0 0 40px rgba(255,255,255,0.3);
+      animation: popIn 0.5s ease;
+    }
+    .champ-msg { color: var(--muted); font-size: 0.9rem; margin-top: 0.5rem; }
+    .restart-btn {
+      margin-top: 2rem;
+      background: linear-gradient(135deg, var(--yellow), var(--yellow2));
+      color: #0a1628;
+      border: none;
+      border-radius: 14px;
+      padding: 0.85rem 2.5rem;
+      font-family: 'Black Han Sans', sans-serif;
+      font-size: 1.05rem;
+      cursor: pointer;
+      transition: transform 0.15s, box-shadow 0.2s;
+      box-shadow: 0 4px 20px rgba(250,204,21,0.35);
+    }
+    .restart-btn:hover { transform: scale(1.05); box-shadow: 0 6px 28px rgba(250,204,21,0.5); }
+    .restart-btn:active { transform: scale(0.98); }
+
+    /* RESPONSIVE */
+    @media (max-width: 480px) {
+      .match-grid { grid-template-columns: repeat(2, 1fr); gap: 8px; padding: 0 0.75rem; }
+      .wc-title { font-size: 1.6rem; }
+    }
+  </style>
+</head>
+<body>
+<div id="app">
+  <div class="wc-header">
+    <span class="wc-trophy">🏆</span>
+    <h1 class="wc-title">동물 선호 월드컵</h1>
+    <p class="wc-subtitle">가장 사랑받는 동물을 찾아라! 32마리 중 최강자는?</p>
+    <span class="round-badge" id="round-badge">32강</span>
+  </div>
+
+  <div class="progress-wrap">
+    <div class="progress-fill" id="progress-fill"></div>
+  </div>
+  <p class="status-info" id="status-info">경기를 선택해 주세요</p>
+
+  <div class="match-grid" id="match-grid"></div>
+
+  <div class="footer">
+    <button class="proceed-btn" id="proceed-btn" onclick="goNext()">다음 라운드 →</button>
+  </div>
+
+  <div class="champ-screen" id="champ-screen">
+    <span class="champ-emoji" id="champ-emoji"></span>
+    <p class="confetti-line">🎉 🎊 🎉 🎊 🎉</p>
+    <p class="champ-title">🏆 최종 우승 동물 🏆</p>
+    <p class="champ-name" id="champ-name"></p>
+    <p class="champ-msg">32마리 중 가장 사랑받는 동물!</p>
+    <button class="restart-btn" onclick="restart()">🔄 다시 하기</button>
+  </div>
+</div>
+
+<script>
+  var ANIMALS = [
+    {e:"🦁",n:"사자"},{e:"🐯",n:"호랑이"},{e:"🐻",n:"곰"},{e:"🦊",n:"여우"},
+    {e:"🐺",n:"늑대"},{e:"🦝",n:"라쿤"},{e:"🐼",n:"판다"},{e:"🦄",n:"유니콘"},
+    {e:"🐬",n:"돌고래"},{e:"🦋",n:"나비"},{e:"🦅",n:"독수리"},{e:"🦒",n:"기린"},
+    {e:"🐘",n:"코끼리"},{e:"🦓",n:"얼룩말"},{e:"🦘",n:"캥거루"},{e:"🦔",n:"고슴도치"},
+    {e:"🐧",n:"펭귄"},{e:"🦜",n:"앵무새"},{e:"🐙",n:"문어"},{e:"🦈",n:"상어"},
+    {e:"🐆",n:"치타"},{e:"🦩",n:"플라밍고"},{e:"🦦",n:"수달"},{e:"🐨",n:"코알라"},
+    {e:"🐸",n:"개구리"},{e:"🦚",n:"공작새"},{e:"🐉",n:"드래곤"},{e:"🦭",n:"물개"},
+    {e:"🐿️",n:"다람쥐"},{e:"🦌",n:"사슴"},{e:"🐳",n:"고래"},{e:"🌟",n:"백호"}
+  ];
+
+  var ROUND_NAMES = {32:"32강", 16:"16강", 8:"8강", 4:"준결승", 2:"결승"};
+  var matches = [];
+  var roundSize = 32;
+
+  function buildMatches(animals) {
+    matches = [];
+    for (var i = 0; i < animals.length; i += 2) {
+      matches.push({ a: animals[i], b: animals[i+1], winner: null });
+    }
+  }
+
+  function pick(idx, side) {
+    matches[idx].winner = side;
+    renderMatches();
+  }
+
+  function renderMatches() {
+    var grid = document.getElementById('match-grid');
+    grid.innerHTML = '';
+    var done = 0;
+    for (var i = 0; i < matches.length; i++) {
+      if (matches[i].winner) done++;
+    }
+
+    for (var i = 0; i < matches.length; i++) {
+      (function(idx) {
+        var m = matches[idx];
+        var aWon = m.winner === 'a';
+        var bWon = m.winner === 'b';
+
+        var card = document.createElement('div');
+        card.className = 'match-card';
+
+        var numDiv = document.createElement('div');
+        numDiv.className = 'match-num';
+        numDiv.textContent = '경기 ' + (idx + 1);
+        card.appendChild(numDiv);
+
+        var vsDiv = document.createElement('div');
+        vsDiv.className = 'match-vs';
+
+        var btnA = document.createElement('button');
+        btnA.className = 'abtn' + (aWon ? ' winner' : bWon ? ' loser' : '');
+        btnA.innerHTML = '<span class="aemoji">' + m.a.e + '</span><span>' + m.a.n + '</span>';
+        btnA.onclick = function() { pick(idx, 'a'); };
+
+        var vsLbl = document.createElement('span');
+        vsLbl.className = 'vs-label';
+        vsLbl.textContent = 'VS';
+
+        var btnB = document.createElement('button');
+        btnB.className = 'abtn' + (bWon ? ' winner' : aWon ? ' loser' : '');
+        btnB.innerHTML = '<span class="aemoji">' + m.b.e + '</span><span>' + m.b.n + '</span>';
+        btnB.onclick = function() { pick(idx, 'b'); };
+
+        vsDiv.appendChild(btnA);
+        vsDiv.appendChild(vsLbl);
+        vsDiv.appendChild(btnB);
+        card.appendChild(vsDiv);
+        grid.appendChild(card);
+      })(i);
+    }
+
+    var total = matches.length;
+    document.getElementById('progress-fill').style.width = Math.round((done / total) * 100) + '%';
+
+    var statusEl = document.getElementById('status-info');
+    statusEl.textContent = done === total
+      ? '✅ ' + total + '경기 완료! 아래 버튼을 눌러 진출하세요'
+      : done + ' / ' + total + ' 경기 완료';
+
+    var btn = document.getElementById('proceed-btn');
+    btn.textContent = roundSize === 2
+      ? '🏆 우승자 확인!'
+      : (ROUND_NAMES[roundSize / 2] || '다음 라운드') + ' 진출 →';
+
+    if (done === total) {
+      btn.classList.add('active');
+    } else {
+      btn.classList.remove('active');
+    }
+  }
+
+  function goNext() {
+    var btn = document.getElementById('proceed-btn');
+    if (!btn.classList.contains('active')) return;
+
+    var winners = [];
+    for (var i = 0; i < matches.length; i++) {
+      winners.push(matches[i].winner === 'a' ? matches[i].a : matches[i].b);
+    }
+    roundSize = roundSize / 2;
+
+    if (roundSize === 1) {
+      var champ = winners[0];
+      document.getElementById('match-grid').style.display = 'none';
+      document.getElementById('proceed-btn').parentElement.style.display = 'none';
+      document.getElementById('status-info').style.display = 'none';
+      document.getElementById('round-badge').textContent = '🏆 우승!';
+      document.getElementById('champ-emoji').textContent = champ.e;
+      document.getElementById('champ-name').textContent = champ.n;
+      document.getElementById('champ-screen').classList.add('show');
+      return;
+    }
+
+    document.getElementById('round-badge').textContent = ROUND_NAMES[roundSize];
+    buildMatches(winners);
+    renderMatches();
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
+  function restart() {
+    roundSize = 32;
+    document.getElementById('champ-screen').classList.remove('show');
+    document.getElementById('match-grid').style.display = '';
+    document.getElementById('proceed-btn').parentElement.style.display = '';
+    document.getElementById('status-info').style.display = '';
+    document.getElementById('round-badge').textContent = '32강';
+    buildMatches(ANIMALS);
+    renderMatches();
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
+  buildMatches(ANIMALS);
+  renderMatches();
+</script>
+</body>
+</html>
